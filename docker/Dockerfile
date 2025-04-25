@@ -24,22 +24,23 @@ ENV GOSU_VERSION 1.12
 
 RUN set -eux; \
     apt-get update; \
-    # ✅ install required build tools and runtime libraries
     apt-get install -y \
        libffi-dev \
-    libssl-dev \
-    libjpeg-dev \
-    zlib1g-dev \
-    libpq5 \
-    libpq-dev \
-    python3-dev \
-    gettext \
-    git \
-    net-tools \
-    procps \
-    wget \
-    gnupg \
-    ca-certificates;
+       libssl-dev \
+       libjpeg-dev \
+       zlib1g-dev \
+       libpq5 \
+       libpq-dev \
+       python3-dev \
+       libxml2-dev \        # ✅ add this
+       libxslt1-dev \       # ✅ add this
+       gettext \
+       git \
+       net-tools \
+       procps \
+       wget \
+       gnupg \
+       ca-certificates;
     \
     # ✅ install gosu
     dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; \
