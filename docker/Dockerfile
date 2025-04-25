@@ -26,16 +26,20 @@ RUN set -eux; \
     apt-get update; \
     # ✅ install required build tools and runtime libraries
     apt-get install -y \
-       build-essential \
-       gettext \
-       libpq5 \
-       libpq-dev \
-       git \
-       net-tools \
-       procps \
-       wget \
-       gnupg \
-       ca-certificates; \
+       libffi-dev \
+    libssl-dev \
+    libjpeg-dev \
+    zlib1g-dev \
+    libpq5 \
+    libpq-dev \
+    python3-dev \
+    gettext \
+    git \
+    net-tools \
+    procps \
+    wget \
+    gnupg \
+    ca-certificates;
     \
     # ✅ install gosu
     dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; \
@@ -51,7 +55,7 @@ RUN set -eux; \
     # ✅ install Python deps
     python -m pip install --upgrade pip; \
     python -m pip install wheel; \
-    python -m pip install -r requirements.txt; \
+    python -m pip install -r requirements.txt --verbose; \
     python -m pip install -r requirements-contribs.txt; \
     \
     # ✅ django setup
