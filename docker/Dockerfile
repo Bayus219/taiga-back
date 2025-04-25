@@ -12,58 +12,45 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONFAULTHANDLER=1
 
-# Use a virtualenv
+# Create a virtualenv
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Get the code
+# ✅ System dependencies (including libxml2 & libxslt)
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libffi-dev \
+    libssl-dev \
+    libjpeg-dev \
+    zlib1g-dev \
+    libpq5 \
+    libpq-dev \
+    python3-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    gettext \
+    git \
+    net-tools \
+    procps \
+    wget \
+    gnupg \
+    ca-certificates
+
+# ✅ Install Python tooling
+RUN pip install --upgrade pip setuptools wheel
+
+# Copy project code
 COPY . /taiga-back
 WORKDIR /taiga-back
 
-ENV GOSU_VERSION 1.12
+# Copy requirement files first for Docker cache optimization
+COPY requirements.txt .
+COPY requirements-contribs.txt .
 
-RUN set -eux; \
-    apt-get update; \
-    apt-get install -y \
-       libffi-dev \
-       libssl-dev \
-       libjpeg-dev \
-       zlib1g-dev \
-       libpq5 \
-       libpq-dev \
-       python3-dev \
-       libxml2-dev \        # ✅ add this
-       libxslt1-dev \       # ✅ add this
-       gettext \
-       git \
-       net-tools \
-       procps \
-       wget \
-       gnupg \
-       ca-certificates;
-    \
-    # ✅ install gosu
-    dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; \
-    wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch"; \
-    wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc"; \
-    chmod +x /usr/local/bin/gosu; \
-    export GNUPGHOME="$(mktemp -d)"; \
-    gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4; \
-    gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu; \
-    command -v gpgconf && gpgconf --kill all || :; \
-    rm -rf "$GNUPGHOME" /usr/local/bin/gosu.asc; \
-    \
-    # ✅ install Python deps
-    python -m pip install --upgrade pip; \
-    python -m pip install --upgrade pip setuptools wheel; \
+# ✅ Install dependencies
+RUN pip install --verbose -r requirements.txt
+RUN pip install --verbose -r requirements-contribs.txt
 
-    
-# ✅ Separate this so you can debug easily
-COPY requirements.txt /taiga-back/requirements.txt
-COPY requirements-contribs.txt /taiga-back/requirements-contribs.txt
-
-RUN pip install --verbose -r /taiga-back/requirements.txt
-RUN pip install --verbose -r /taiga-back/requirements-contribs.txt
 
     \
     # ✅ django setup
