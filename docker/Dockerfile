@@ -13,7 +13,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONFAULTHANDLER=1
 ENV PATH="/opt/venv/bin:$PATH"
 
-# 🛠 System dependencies for building lxml and Python packages
+# 🛠 System dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     libffi-dev \
@@ -33,29 +33,29 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     ca-certificates
 
-# 🐍 Set up Python virtual environment
+# 🐍 Set up virtual environment
 RUN python -m venv /opt/venv
-RUN . /opt/venv/bin/activate && pip install --upgrade pip setuptools wheel
+RUN /opt/venv/bin/pip install --upgrade pip setuptools wheel
 
 # 📁 Set working directory & copy project
 WORKDIR /taiga-back
 COPY . .
 
-# 📦 Install dependencies
-RUN pip install --verbose -r requirements.txt
-RUN pip install --verbose -r requirements-contribs.txt
+# 📦 Install requirements
+RUN /opt/venv/bin/pip install --verbose -r requirements.txt
+RUN /opt/venv/bin/pip install --verbose -r requirements-contribs.txt
 
-# 🧰 Setup scripts and files
+# 🧰 Project setup
 RUN chmod +x docker/entrypoint.sh docker/async_entrypoint.sh && \
-    python manage.py compilemessages && \
-    python manage.py collectstatic --no-input && \
+    /opt/venv/bin/python manage.py compilemessages && \
+    /opt/venv/bin/python manage.py collectstatic --no-input && \
     cp docker/config.py settings/config.py && \
     groupadd --system taiga --gid=999 && \
     useradd --system --no-create-home --gid taiga --uid=999 --shell=/bin/bash taiga && \
     mkdir -p /taiga-back/media/exports && \
     chown -R taiga:taiga /taiga-back
 
-# 🧹 Clean up build dependencies
+# 🧹 Clean-up
 RUN apt-get purge -y \
        build-essential \
        gettext \
@@ -75,5 +75,6 @@ ENV DJANGO_SETTINGS_MODULE=settings.config
 
 EXPOSE 8000
 ENTRYPOINT ["./docker/entrypoint.sh"]
+
 
 
