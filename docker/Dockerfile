@@ -54,9 +54,16 @@ RUN set -eux; \
     \
     # ✅ install Python deps
     python -m pip install --upgrade pip; \
-    python -m pip install wheel; \
-    python -m pip install -r requirements.txt --verbose; \
-    python -m pip install -r requirements-contribs.txt; \
+    python -m pip install --upgrade pip setuptools wheel; \
+
+    
+# ✅ Separate this so you can debug easily
+COPY requirements.txt /taiga-back/requirements.txt
+COPY requirements-contribs.txt /taiga-back/requirements-contribs.txt
+
+RUN pip install --verbose -r /taiga-back/requirements.txt
+RUN pip install --verbose -r /taiga-back/requirements-contribs.txt
+
     \
     # ✅ django setup
     python manage.py compilemessages; \
